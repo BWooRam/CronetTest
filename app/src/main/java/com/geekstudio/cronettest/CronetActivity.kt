@@ -1,6 +1,8 @@
 package com.geekstudio.cronettest
 
+import android.os.Build
 import android.os.Bundle
+import android.os.ext.SdkExtensions
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -40,7 +42,7 @@ import java.util.concurrent.Executors
 
 
 class CronetActivity : ComponentActivity() {
-    private val TAG = "MainActivity"
+    private val TAG = "CronetActivity"
     private val executor: Executor = Executors.newSingleThreadExecutor()
     private val urlRequestCallback = object : UrlRequest.Callback() {
         override fun onRedirectReceived(
@@ -66,8 +68,8 @@ class CronetActivity : ComponentActivity() {
             val httpStatusCode = info?.httpStatusCode
             if (httpStatusCode == 200) {
                 Log.d(TAG, "onReadCompleted method 200 called. before request = ${info.toString()}")
-                request?.read(byteBuffer)
-                Log.d(TAG, "onReadCompleted method 200 called. after request = ${info.toString()}")
+                /*request?.read(byteBuffer)
+                Log.d(TAG, "onReadCompleted method 200 called. after request = ${info.toString()}")*/
             } else if (httpStatusCode == 503) {
                 Log.d(TAG, "onReadCompleted method 503 called.")
                 request?.read(byteBuffer)
@@ -87,6 +89,12 @@ class CronetActivity : ComponentActivity() {
         }
     }
 
+    private val urls = listOf(
+        "https://www.kakaocorp.com/page/service/service/KakaoTalk",
+        "https://www.facebook.com/",
+        "https://www.daum.net",
+        "https://www.google.com",
+        "https://www.whatsmydns.net/example-301-redirect")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -95,15 +103,24 @@ class CronetActivity : ComponentActivity() {
                 Column {
                     Spacer(modifier = Modifier.fillMaxWidth().height(100.dp))
                     Button(onClick = {
-                        val cronetEngine: CronetEngine = CronetEngine.Builder(this@CronetActivity).build()
-                        val requestBuilder = cronetEngine.newUrlRequestBuilder(
-                            "https://www.whatsmydns.net/example-301-redirect",
-                            urlRequestCallback,
-                            executor
-                        )
+                        for(index in 0 .. 4){
+                            val cronetEngine: CronetEngine = CronetEngine.Builder(this@CronetActivity).enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024 * 1024).build()
+                            val requestBuilder = cronetEngine.newUrlRequestBuilder(
+                                urls[index],
+                                urlRequestCallback,
+                                executor
+                            )
 
-                        val request: UrlRequest = requestBuilder.build()
-                        request.start()
+                            val request: UrlRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7) {
+                                Log.d(TAG, "UrlRequest url = ${urls[index]}, priority = $index")
+                                requestBuilder
+                                    .setPriority(index)
+                                    .build()
+                            } else {
+                                requestBuilder.build()
+                            }
+                            request.start()
+                        }
                     }) {
                         Text(text = "요청 보내기")
                     }

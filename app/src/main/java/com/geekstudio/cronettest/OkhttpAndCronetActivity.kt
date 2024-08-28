@@ -36,7 +36,7 @@ import java.util.concurrent.Executors
 
 
 class OkhttpAndCronetActivity : ComponentActivity() {
-    private val TAG = "MainActivity"
+    private val TAG = "OkhttpAndCronetActivity"
     private lateinit var engine: CronetEngine
     private lateinit var okHttpClient: OkHttpClient
     private lateinit var okhttpRetrofit: Retrofit
