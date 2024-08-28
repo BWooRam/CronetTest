@@ -86,8 +86,8 @@ class CronetActivity : ComponentActivity() {
                 Column {
                     Spacer(modifier = Modifier.fillMaxWidth().height(100.dp))
                     Button(onClick = {
+                        val cronetEngine: CronetEngine = CronetEngine.Builder(this@CronetActivity).enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024 * 1024).build()
                         for(index in 0 .. 4){
-                            val cronetEngine: CronetEngine = CronetEngine.Builder(this@CronetActivity).enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 10 * 1024 * 1024).build()
                             val requestBuilder = cronetEngine.newUrlRequestBuilder(
                                 urls[index],
                                 urlRequestCallback,
@@ -97,6 +97,8 @@ class CronetActivity : ComponentActivity() {
                             requestBuilder
                                 .setPriority(REQUEST_PRIORITY_HIGHEST)
                                 .build()
+
+
                         }
                     }) {
                         Text(text = "요청 보내기")
